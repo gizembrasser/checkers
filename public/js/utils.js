@@ -3,7 +3,7 @@ function checkDiagonals(start) {
     const row = Math.floor((63 - start) / width) + 1;
     const col = start % width;
 
-    // Get the id for the diagonally adjacent squares, store it in the array
+    // Get the id for each diagonally adjacent square, store it in the array
     const diagonalSquares = [];
 
     // Check top-left
@@ -24,31 +24,29 @@ function checkDiagonals(start) {
 // A jump move of 2 squares is disabled by default if there aren't any opponent's piece(s) to capture
 function validMove(target, mandatoryJump = false) {
     const end = target.getAttribute("square-id");
-    const start = parseInt(startPositionId);
+    const start = Number(startPositionId);
 
-    const startRow = Math.floor((63 - start) / width) + 1;
-    const endRow = Math.floor((63 - end) / width) + 1;
-    const startCol = start % width;
-    const endCol = end % width;
-
-    const rowDiff = Math.abs(startRow - endRow);
-    const colDiff = Math.abs(startCol - endCol);
+    const squareIds = checkDiagonals(start);
 
     // Allow either a jump move (2 diagonal squares) or a regular move (1 diagonal square)
     if (mandatoryJump) {
-        return rowDiff === 2 && colDiff === 2 && endRow < startRow;
+        let jumpMoves = [];
+
+        squareIds.forEach(id => jumpMoves = jumpMoves.concat(checkDiagonals(id)));
+        return jumpMoves.includes(Number(end));
     } else {
-        return rowDiff === 1 && colDiff === 1 && endRow < startRow;
+        return squareIds.includes(Number(end));
     }
 };
 
 
-// Function that checks whether there is an opponent piece in a square diagonally adjacent
-// If yes it is mandatory to make a jump move
-function checkMandatoryJump(opponentTurn) {
-    const start = parseInt(startPositionId);
+// Checks whether there's an opponent piece in a square diagonally adjacent, and the square beyond is vacant
+// If yes it is mandatory to make a jump move, return the jumping piece and opponent's piece
+function checkMandatoryJump(target, opponentTurn) {
+    const end = target.getAttribute("square-id");
+    const start = Number(startPositionId);
 
-    const squareIds = checkDiagonals(start);
+    const squareIds = checkDiagonals(Number(start));
 
     console.log("Diagonally adjacent square id's:", squareIds);
 
@@ -57,15 +55,16 @@ function checkMandatoryJump(opponentTurn) {
         const takenByOpponent = square.firstChild?.firstChild.classList.contains(opponentTurn);
 
         if (takenByOpponent) {
-            const opponentPiece = square;
+            const jumpSquare = document.querySelector(`[square-id="${end}"]`);
+            const vacant = !jumpSquare.classList.contains("piece");
 
-            if (opponentPiece) {
-                return opponentPiece;
+            if (square && vacant) {
+                return square;
             } else {
                 return null;
             }
         }
-    };
+    }
 };
 
 

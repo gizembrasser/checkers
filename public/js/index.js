@@ -89,44 +89,34 @@ function dragDrop(e) {
     // Define game rules
     const validTurn = draggedElement.firstChild.classList.contains(playerTurn);
     const opponentTurn = playerTurn === "white" ? "black" : "white";
-    const movePiece = validMove(e.target);
-    const mandatoryJump = validMove(e.target, checkMandatoryJump(e.target, opponentTurn));
+    const taken = e.target.classList.contains("piece");
+    const move = validMove(e.target);
+    const capturedPiece = checkMandatoryJump(e.target, opponentTurn) ?? {};
+    const mandatoryJump = validMove(e.target, capturedPiece);
 
     const endPositionId = e.target.getAttribute("square-id");
 
     console.log("Start Position:", startPositionId);
     console.log("End Position:", endPositionId);
 
-    // Check if it's a valid turn, and if the piece was moved diagonally
-    if (validTurn && movePiece) {
+    // Check if it's a valid turn, and if the piece was moved into an empty black square
+    if (!taken && validTurn && move) {
         e.target.append(draggedElement);
         changePlayer();
         return
         // Check if there is an opponent's piece that can be captured
-    } else if (validTurn && mandatoryJump) {
-        // Check if player uses mandatory jump
-        if (draggedElement.parentNode.getAttribute("square-id") !== startPositionId) {
-            infoDisplay.textContent = "It is mandatory to jump here!";
-            setTimeout(() => infoDisplay.textContent = "", 1000);
-
-            return
-        }
-
+    } else if (!taken && validTurn && mandatoryJump) {
+        // Ensure player uses mandatory jump
         e.target.append(draggedElement);
-        opponentPiece.firstChild.remove();
+        capturedPiece.firstChild.remove();
 
         infoDisplay.textContent = "Captured!";
         setTimeout(() => infoDisplay.textContent = "", 1000);
-
-        if (!checkMandatoryJump(opponentPiece, opponentTurn)) {
-            changePlayer();
-        }
-
+        changePlayer();
         return
     } else {
         infoDisplay.textContent = "Invalid move!";
         setTimeout(() => infoDisplay.textContent = "", 1000);
-
         return
     }
 };
