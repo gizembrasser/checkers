@@ -72,12 +72,11 @@ function validMove(target, mandatoryJump = false) {
 // If yes it is mandatory to make a jump move, return the jumping piece and opponent's piece
 function checkMandatoryJump(opponentTurn) {
     const start = Number(startPos);
-    const piece = document.querySelector(`[square-id="${start}"]`);
 
     const squareIds = checkDiagonals(start);
 
     // For check if surrounding diagonals are taken by opponent(s)
-    for (const id of squareIds) {
+    const mandatoryJump = squareIds.map(id => {
         const square = document.querySelector(`[square-id="${id}"]`);
         const takenByOpponent = square.firstChild?.firstChild.classList.contains(opponentTurn);
 
@@ -86,22 +85,41 @@ function checkMandatoryJump(opponentTurn) {
         if (takenByOpponent) {
             const targets = getJumpMoves(start, squareIds);
 
+            let vacant = [];
             // If at least one square is vacant, a jump is allowed
-            const vacant = targets.some((id) => {
+            targets.forEach(id => {
                 const target = document.querySelector(`[square-id="${id}"]`);
-                return (target.firstChild !== null) ? false : true;
-            })
-
-            if (vacant) {
-                return {
-                    jumpMoves: targets,
-                    capturedPiece: square,
-                    playerPiece: piece
+                if (target.firstChild === null) {
+                    vacant.push(id);
                 }
-            } else {
-                return null;
-            }
+            });
+            // Assign false if there's no vacant squares
+            vacant = vacant.length === 0 ? false : vacant;
+
+            return { jumpMoves: vacant, capturedPiece: square };
         }
+    });
+    return mandatoryJump;
+};
+
+
+// If an array has two objects with the same keys, concatenate their values together into one object
+Array.prototype.objectConcat = function () {
+    const objects = this.filter(x => typeof x === "object");
+
+    if (objects.length > 1) {
+        const result = {};
+
+        const keys = Object.keys(objects[0]);
+
+        keys.forEach(key => {
+            const value = objects.map(obj => obj[key]);
+            result[key] = value.some(Array.isArray) ? [].concat(...value) : value;
+        });
+
+        return result;
+    } else {
+        return objects[0];
     }
 };
 
