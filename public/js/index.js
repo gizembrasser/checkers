@@ -3,7 +3,7 @@ const socket = io.connect("http://localhost:3000");
 socket.emit("joined");
 
 
-// Globals
+/* ----------------------------------- Globals ------------------------------------------ */
 const board = document.querySelector("#board");
 const playerDisplay = document.querySelector("#player");
 const infoDisplay = document.querySelector("#turn-info");
@@ -24,8 +24,7 @@ const startingPieces = [
 ];
 
 
-// Add a square to the board for each startingPiece
-// Every square will be assigned a unique id
+/* ------------------- Add a square to the board for each startingPiece -------------------- */
 function createBoard() {
     startingPieces.forEach((piece, i) => {
         const square = document.createElement("div");
@@ -61,9 +60,9 @@ function createBoard() {
 createBoard()
 
 
+/* ------------------------------ Make the checkers moveable -------------------------------- */
 const squares = document.querySelectorAll(".square");
 
-// Make the checkers moveable
 squares.forEach(square => {
     square.addEventListener("dragstart", dragStart);
     square.addEventListener("dragover", dragOver);
@@ -90,12 +89,13 @@ function dragDrop(e) {
     const validTurn = draggedElement.firstChild.classList.contains(playerTurn);
     const opponentTurn = playerTurn === "white" ? "black" : "white";
     const taken = e.target.classList.contains("piece");
-    const { jumpMoves, capturedPiece, playerPiece } = checkMandatoryJump(opponentTurn) ?? {};
-    const { move, jumpAllowed } = validMove(e.target, capturedPiece);
-    const mandatoryJump = playerPiece === draggedElement.parentNode;
-    console.log(mandatoryJump)
+    const mandatoryJump = checkMandatoryJump(opponentTurn);
 
-    const endPos = e.target.getAttribute("square-id");
+    const jumpTargets = mandatoryJump.objectConcat();
+    const { jumpMoves, capturedPiece } = jumpTargets ?? [];
+    const { move, jumpAllowed } = validMove(e.target, jumpMoves);
+
+    const endPos = Number(e.target.getAttribute("square-id"));
 
     console.log("Start Position:", startPos);
     console.log("End Position:", endPos);
@@ -106,35 +106,46 @@ function dragDrop(e) {
         if (move && !jumpAllowed) {
             e.target.append(draggedElement);
             changePlayer();
-            return
+            return;
         }
 
-        if (move && jumpAllowed) {
-            if (jumpMoves.includes(Number(endPos))) {
-                e.target.append(draggedElement);
-                capturedPiece.firstChild.remove();
+        if (move && jumpAllowed && jumpMoves.includes(endPos)) {
+            infoDisplay.textContent = "Captured!";
+            setTimeout(() => infoDisplay.textContent = "", 1000);
+            const twoJumpsAllowed = Array.isArray(capturedPiece);
 
-                infoDisplay.textContent = "Captured!";
-                setTimeout(() => infoDisplay.textContent = "", 1000);
+            // Check which opponent's piece to remove based on end position
+            if (twoJumpsAllowed && jumpMoves[0] === endPos) {
+                e.target.append(draggedElement);
+                capturedPiece[0].firstChild.remove();
                 changePlayer();
-                return
+                return;
+            } else if (twoJumpsAllowed && jumpMoves[1] === endPos) {
+                e.target.append(draggedElement);
+                capturedPiece[1].firstChild.remove();
+                changePlayer();
+                return;
             }
 
-            infoDisplay.textContent = "Mandatory jump";
-            setTimeout(() => infoDisplay.textContent = "", 1000);
-            return
-        }
+            e.target.append(draggedElement);
+            capturedPiece.firstChild.remove();
+            changePlayer();
+            return;
+        };
 
-    } else {
-        infoDisplay.textContent = "Invalid move";
+        infoDisplay.textContent = "Mandatory jump";
         setTimeout(() => infoDisplay.textContent = "", 1000);
-        return
-
+        return;
     }
+
+    infoDisplay.textContent = "Invalid move";
+    setTimeout(() => infoDisplay.textContent = "", 1000);
+    return;
 };
 
 
-// Change whose turn it is after each move
+
+/* ------------------------- Change whose turn it is after each move ----------------------------- */
 function changePlayer() {
     if (playerTurn === "black") {
         reverseIds()
@@ -148,8 +159,7 @@ function changePlayer() {
 };
 
 
-// Flip the board around after a turn
-// Reverse/revert the id for each square when it's the other players turn
+/* ---------------- Flip the board around after a turn by reversing/reverting id's ------------------- */
 function reverseIds() {
     squares.forEach((square, i) => square.setAttribute("square-id", (width * width - 1) - i));
 };
@@ -159,9 +169,12 @@ function revertIds() {
 };
 
 
+/* ------------------------------------ Check for win ----------------------------------------------- */
 function checkForWin() {
     const whites = Array.from(document.querySelectorAll("#white-piece"));
     const blacks = Array.from(document.querySelectorAll("#black-piece"));
+
+    const endRow = [56, 57, 58, 59, 60, 61, 62, 63];
 
     if (whites.length === 0 || blacks.length === 0) {
         console.log("game over");
@@ -170,7 +183,7 @@ function checkForWin() {
 
 checkForWin()
 
-/* ---------------- Temporarily hidden multiplayer functionalities (unfinished) ---------------- */
+/* ------------------- Temporarily hidden multiplayer functionalities (unfinished) ------------------- */
 
 
 document.getElementById("loading").hidden = true;
