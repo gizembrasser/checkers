@@ -33,8 +33,11 @@ function validMove(target, mandatoryJump = false) {
         let jumpMoves = [];
 
         squareIds.forEach(id => jumpMoves = jumpMoves.concat(checkDiagonals(id)));
+        jumpMoves.splice(1, 2);
+        console.log("jump", jumpMoves)
         return jumpMoves.includes(Number(end));
     } else {
+        console.log("regular", squareIds)
         return squareIds.includes(Number(end));
     }
 };
@@ -55,14 +58,17 @@ function checkMandatoryJump(target, opponentTurn) {
         const takenByOpponent = square.firstChild?.firstChild.classList.contains(opponentTurn);
 
         if (takenByOpponent) {
+            console.log("taken", takenByOpponent)
             const jumpSquare = document.querySelector(`[square-id="${end}"]`);
             const vacant = !jumpSquare.classList.contains("piece");
 
             if (square && vacant) {
+                console.log("hi")
                 return square;
-            } else {
-                return null;
             }
+        } else {
+            console.log("null")
+            return null;
         }
     }
 };

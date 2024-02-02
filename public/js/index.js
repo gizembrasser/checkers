@@ -91,7 +91,7 @@ function dragDrop(e) {
     const opponentTurn = playerTurn === "white" ? "black" : "white";
     const taken = e.target.classList.contains("piece");
     const move = validMove(e.target);
-    const capturedPiece = checkMandatoryJump(e.target, opponentTurn) ?? {};
+    const capturedPiece = checkMandatoryJump(e.target, opponentTurn);
     const mandatoryJump = validMove(e.target, capturedPiece);
 
     const endPositionId = e.target.getAttribute("square-id");
@@ -107,6 +107,8 @@ function dragDrop(e) {
         // Check if there is an opponent's piece that can be captured
     } else if (!taken && validTurn && mandatoryJump) {
         // Ensure player uses mandatory jump
+        // ....
+
         e.target.append(draggedElement);
         capturedPiece.firstChild.remove();
 
