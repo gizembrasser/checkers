@@ -28,7 +28,21 @@
     <p>It is <span id="player"></span>'s turn</p>
     <p id="turn-info"></p>
 
+    <button id="rules-button">View Rules</button>
+
+    <div id="rules-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Checkers Rules</h2>
+            <p>1. Pieces can only move forwards on dark squares.</p>
+            <p>2. Capture opponent's pieces by jumping over them.</p>
+            <p>3. It is mandatory to jump if possible.</p>
+            <p>4. The game ends when one side has lost all their pieces or is unable to move fowards</p>
+        </div>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
+    <script src="js/modal.js" defer></script>
     <script src="js/svg.js" defer></script>
     <script src="js/index.js" defer></script>
     <script src="js/utils.js" defer></script>
