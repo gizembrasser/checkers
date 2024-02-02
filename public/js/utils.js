@@ -47,11 +47,11 @@ function getJumpMoves(start, regularMoves) {
 };
 
 
-// Function to check if the move is 1 square diagonally adjacent, and not backwards
+// Function to check if the target position is 1 square diagonally adjacent, and not backwards
 // A jump move is disabled by default if there aren't any opponent's piece(s) to capture
 function validMove(target, mandatoryJump = false) {
-    const end = target.getAttribute("square-id");
-    const start = Number(startPositionId);
+    const start = Number(startPos);
+    const targetPos = Number(target.getAttribute("square-id"));
 
     const squareIds = checkDiagonals(start);
 
@@ -60,10 +60,10 @@ function validMove(target, mandatoryJump = false) {
     if (mandatoryJump) {
         const jumpMoves = getJumpMoves(start, squareIds);
         console.log("Jump moves:", jumpMoves)
-        return { move: jumpMoves.includes(Number(end)), jumpAllowed: true };
+        return { move: jumpMoves.includes(targetPos), jumpAllowed: true };
     } else {
         console.log("Regular moves:", squareIds)
-        return { move: squareIds.includes(Number(end)), jumpAllowed: false };
+        return { move: squareIds.includes(targetPos), jumpAllowed: false };
     }
 };
 
@@ -71,10 +71,10 @@ function validMove(target, mandatoryJump = false) {
 // Checks whether there's an opponent piece in a square diagonally adjacent, and the square beyond is vacant
 // If yes it is mandatory to make a jump move, return the jumping piece and opponent's piece
 function checkMandatoryJump(opponentTurn) {
-    const start = Number(startPositionId);
+    const start = Number(startPos);
     const piece = document.querySelector(`[square-id="${start}"]`);
 
-    const squareIds = checkDiagonals(Number(start));
+    const squareIds = checkDiagonals(start);
 
     // For check if surrounding diagonals are taken by opponent(s)
     for (const id of squareIds) {

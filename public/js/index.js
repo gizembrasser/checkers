@@ -1,4 +1,4 @@
-// Socket connection
+// Socket connection (unfinished)
 const socket = io.connect("http://localhost:3000");
 socket.emit("joined");
 
@@ -71,11 +71,11 @@ squares.forEach(square => {
 });
 
 // Record the start position after element has been moved
-let startPositionId;
+let startPos;
 let draggedElement;
 
 function dragStart(e) {
-    startPositionId = e.target.parentNode.getAttribute("square-id");
+    startPos = e.target.parentNode.getAttribute("square-id");
     draggedElement = e.target;
 };
 
@@ -95,10 +95,10 @@ function dragDrop(e) {
     const mandatoryJump = playerPiece === draggedElement.parentNode;
     console.log(mandatoryJump)
 
-    const endPositionId = e.target.getAttribute("square-id");
+    const endPos = e.target.getAttribute("square-id");
 
-    console.log("Start Position:", startPositionId);
-    console.log("End Position:", endPositionId);
+    console.log("Start Position:", startPos);
+    console.log("End Position:", endPos);
 
     // Check if it's a valid turn, and if the piece was moved into an empty black square
     if (!taken && validTurn) {
@@ -110,7 +110,7 @@ function dragDrop(e) {
         }
 
         if (move && jumpAllowed) {
-            if (jumpMoves.includes(Number(endPositionId))) {
+            if (jumpMoves.includes(Number(endPos))) {
                 e.target.append(draggedElement);
                 capturedPiece.firstChild.remove();
 
@@ -118,22 +118,23 @@ function dragDrop(e) {
                 setTimeout(() => infoDisplay.textContent = "", 1000);
                 changePlayer();
                 return
-            } else {
-                infoDisplay.textContent = "Mandatory jump";
-                setTimeout(() => infoDisplay.textContent = "", 1000);
-                return
             }
-        } else {
-            infoDisplay.textContent = "Invalid move";
+
+            infoDisplay.textContent = "Mandatory jump";
             setTimeout(() => infoDisplay.textContent = "", 1000);
             return
-
         }
+
+    } else {
+        infoDisplay.textContent = "Invalid move";
+        setTimeout(() => infoDisplay.textContent = "", 1000);
+        return
+
     }
 };
 
 
-// Change who's turn it is after each move
+// Change whose turn it is after each move
 function changePlayer() {
     if (playerTurn === "black") {
         reverseIds()
