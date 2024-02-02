@@ -3,14 +3,11 @@ const socket = io.connect("http://localhost:3000");
 socket.emit("joined");
 
 
-// Initialization
+// Globals
 const board = document.querySelector("#board");
 const playerDisplay = document.querySelector("#player");
 const infoDisplay = document.querySelector("#turn-info");
 const width = 8;
-
-const whitePiece = "<div class='piece' id='white-piece'><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d=\"M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z\"/></svg></div>"
-const blackPiece = "<div class='piece' id='black-piece'><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d=\"M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z\"/></svg></div>"
 
 let playerTurn = "black";
 playerDisplay.textContent = "black";
@@ -73,9 +70,8 @@ squares.forEach(square => {
     square.addEventListener("drop", dragDrop);
 });
 
-// Record the start/end position after element has been moved
+// Record the start position after element has been moved
 let startPositionId;
-let opponentPiece;
 let draggedElement;
 
 function dragStart(e) {
@@ -90,9 +86,11 @@ function dragOver(e) {
 function dragDrop(e) {
     e.stopPropagation();
 
+    // Define game rules
     const validTurn = draggedElement.firstChild.classList.contains(playerTurn);
     const opponentTurn = playerTurn === "white" ? "black" : "white";
-    const opponentPiece = getCapturedPiece(opponentTurn);
+    const movePiece = validMove(e.target);
+    const mandatoryJump = validMove(e.target, checkMandatoryJump(e.target, opponentTurn));
 
     const endPositionId = e.target.getAttribute("square-id");
 
@@ -100,18 +98,35 @@ function dragDrop(e) {
     console.log("End Position:", endPositionId);
 
     // Check if it's a valid turn, and if the piece was moved diagonally
-    if (validTurn && validMove(e.target)) {
+    if (validTurn && movePiece) {
         e.target.append(draggedElement);
         changePlayer();
         return
-    } else if (validTurn && validMove(e.target, opponentPiece)) {
+        // Check if there is an opponent's piece that can be captured
+    } else if (validTurn && mandatoryJump) {
+        // Check if player uses mandatory jump
+        if (draggedElement.parentNode.getAttribute("square-id") !== startPositionId) {
+            infoDisplay.textContent = "It is mandatory to jump here!";
+            setTimeout(() => infoDisplay.textContent = "", 1000);
+
+            return
+        }
+
         e.target.append(draggedElement);
         opponentPiece.firstChild.remove();
-        changePlayer();
+
+        infoDisplay.textContent = "Captured!";
+        setTimeout(() => infoDisplay.textContent = "", 1000);
+
+        if (!checkMandatoryJump(opponentPiece, opponentTurn)) {
+            changePlayer();
+        }
+
         return
     } else {
         infoDisplay.textContent = "Invalid move!";
         setTimeout(() => infoDisplay.textContent = "", 1000);
+
         return
     }
 };
@@ -141,6 +156,17 @@ function revertIds() {
     squares.forEach((square, i) => square.setAttribute("square-id", i));
 };
 
+
+function checkForWin() {
+    const whites = Array.from(document.querySelectorAll("#white-piece"));
+    const blacks = Array.from(document.querySelectorAll("#black-piece"));
+
+    if (whites.length === 0 || blacks.length === 0) {
+        console.log("game over");
+    }
+};
+
+checkForWin()
 
 /* ---------------- Temporarily hidden multiplayer functionalities (unfinished) ---------------- */
 
