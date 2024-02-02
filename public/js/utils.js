@@ -20,59 +20,90 @@ function checkDiagonals(start) {
 };
 
 
+// Check possible jump moves of 2 diagonal squares
+function getJumpMoves(start, regularMoves) {
+    let jumpMoves = [];
+
+    // Account for squares at the egde of the board
+    const rightCol = [0, 8, 16, 24, 32, 40, 48, 56];
+    const leftCol = [7, 15, 23, 31, 39, 47, 55, 63];
+
+    if (regularMoves.length > 1) {
+        regularMoves.forEach(id => jumpMoves = jumpMoves.concat(checkDiagonals(id)));
+        jumpMoves.splice(1, jumpMoves.length - 2);
+    }
+
+    if (rightCol.includes(start)) {
+        jumpMoves = checkDiagonals(regularMoves);
+        jumpMoves.splice(0, 1);
+    }
+
+    if (leftCol.includes(start)) {
+        jumpMoves = checkDiagonals(regularMoves);
+        jumpMoves.splice(1);
+    }
+
+    return jumpMoves;
+};
+
+
 // Function to check if the move is 1 square diagonally adjacent, and not backwards
-// A jump move of 2 squares is disabled by default if there aren't any opponent's piece(s) to capture
+// A jump move is disabled by default if there aren't any opponent's piece(s) to capture
 function validMove(target, mandatoryJump = false) {
     const end = target.getAttribute("square-id");
     const start = Number(startPositionId);
 
     const squareIds = checkDiagonals(start);
 
-    // Allow either a jump move (2 diagonal squares) or a regular move (1 diagonal square)
+    // Allow either a jump move or a regular move (1 diagonal square)
+    // Return legal moves and whether a jump is allowed
     if (mandatoryJump) {
-        let jumpMoves = [];
-
-        squareIds.forEach(id => jumpMoves = jumpMoves.concat(checkDiagonals(id)));
-        jumpMoves.splice(1, 2);
-        console.log("jump", jumpMoves)
-        return jumpMoves.includes(Number(end));
+        const jumpMoves = getJumpMoves(start, squareIds);
+        console.log("Jump moves:", jumpMoves)
+        return { move: jumpMoves.includes(Number(end)), jumpAllowed: true };
     } else {
-        console.log("regular", squareIds)
-        return squareIds.includes(Number(end));
+        console.log("Regular moves:", squareIds)
+        return { move: squareIds.includes(Number(end)), jumpAllowed: false };
     }
 };
 
 
 // Checks whether there's an opponent piece in a square diagonally adjacent, and the square beyond is vacant
 // If yes it is mandatory to make a jump move, return the jumping piece and opponent's piece
-function checkMandatoryJump(target, opponentTurn) {
-    const end = target.getAttribute("square-id");
+function checkMandatoryJump(opponentTurn) {
     const start = Number(startPositionId);
+    const piece = document.querySelector(`[square-id="${start}"]`);
 
     const squareIds = checkDiagonals(Number(start));
 
-    console.log("Diagonally adjacent square id's:", squareIds);
-
+    // For check if surrounding diagonals are taken by opponent(s)
     for (const id of squareIds) {
         const square = document.querySelector(`[square-id="${id}"]`);
         const takenByOpponent = square.firstChild?.firstChild.classList.contains(opponentTurn);
 
+        // Calculate where player has to jump to in order to capture opponent
+        // For each possible target, check if the square is vacant
         if (takenByOpponent) {
-            console.log("taken", takenByOpponent)
-            const jumpSquare = document.querySelector(`[square-id="${end}"]`);
-            const vacant = !jumpSquare.classList.contains("piece");
+            const targets = getJumpMoves(start, squareIds);
 
-            if (square && vacant) {
-                console.log("hi")
-                return square;
+            // If at least one square is vacant, a jump is allowed
+            const vacant = targets.some((id) => {
+                const target = document.querySelector(`[square-id="${id}"]`);
+                return (target.firstChild !== null) ? false : true;
+            })
+
+            if (vacant) {
+                return {
+                    jumpMoves: targets,
+                    capturedPiece: square,
+                    playerPiece: piece
+                }
+            } else {
+                return null;
             }
-        } else {
-            console.log("null")
-            return null;
         }
     }
 };
-
 
 
 

@@ -90,9 +90,10 @@ function dragDrop(e) {
     const validTurn = draggedElement.firstChild.classList.contains(playerTurn);
     const opponentTurn = playerTurn === "white" ? "black" : "white";
     const taken = e.target.classList.contains("piece");
-    const move = validMove(e.target);
-    const capturedPiece = checkMandatoryJump(e.target, opponentTurn);
-    const mandatoryJump = validMove(e.target, capturedPiece);
+    const { jumpMoves, capturedPiece, playerPiece } = checkMandatoryJump(opponentTurn) ?? {};
+    const { move, jumpAllowed } = validMove(e.target, capturedPiece);
+    const mandatoryJump = playerPiece === draggedElement.parentNode;
+    console.log(mandatoryJump)
 
     const endPositionId = e.target.getAttribute("square-id");
 
@@ -100,26 +101,34 @@ function dragDrop(e) {
     console.log("End Position:", endPositionId);
 
     // Check if it's a valid turn, and if the piece was moved into an empty black square
-    if (!taken && validTurn && move) {
-        e.target.append(draggedElement);
-        changePlayer();
-        return
-        // Check if there is an opponent's piece that can be captured
-    } else if (!taken && validTurn && mandatoryJump) {
-        // Ensure player uses mandatory jump
-        // ....
+    if (!taken && validTurn) {
+        // Check if it's a regular move or jump move
+        if (move && !jumpAllowed) {
+            e.target.append(draggedElement);
+            changePlayer();
+            return
+        }
 
-        e.target.append(draggedElement);
-        capturedPiece.firstChild.remove();
+        if (move && jumpAllowed) {
+            if (jumpMoves.includes(Number(endPositionId))) {
+                e.target.append(draggedElement);
+                capturedPiece.firstChild.remove();
 
-        infoDisplay.textContent = "Captured!";
-        setTimeout(() => infoDisplay.textContent = "", 1000);
-        changePlayer();
-        return
-    } else {
-        infoDisplay.textContent = "Invalid move!";
-        setTimeout(() => infoDisplay.textContent = "", 1000);
-        return
+                infoDisplay.textContent = "Captured!";
+                setTimeout(() => infoDisplay.textContent = "", 1000);
+                changePlayer();
+                return
+            } else {
+                infoDisplay.textContent = "Mandatory jump";
+                setTimeout(() => infoDisplay.textContent = "", 1000);
+                return
+            }
+        } else {
+            infoDisplay.textContent = "Invalid move";
+            setTimeout(() => infoDisplay.textContent = "", 1000);
+            return
+
+        }
     }
 };
 
