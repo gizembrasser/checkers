@@ -92,8 +92,8 @@ function dragDrop(e) {
     const mandatoryJump = checkMandatoryJump(opponentTurn);
 
     const jumpTargets = mandatoryJump.objectConcat();
-    const { jumpMoves, capturedPiece } = jumpTargets ?? [];
-    const { move, jumpAllowed } = validMove(e.target, jumpMoves);
+    const { jumpMoves, capturedPiece } = jumpTargets ?? {};
+    const { move, jumpAllowed } = validMove(e.target, jumpTargets);
     console.log(jumpTargets)
 
     const endPos = Number(e.target.getAttribute("square-id"));

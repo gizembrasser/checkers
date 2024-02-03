@@ -1,19 +1,21 @@
 // Function that returns all diagonally adjacent squares in front of a certain starting square
 function checkDiagonals(start) {
-    const row = Math.floor((63 - start) / width) + 1;
+    // Horizontal rows 0 - 7
+    const row = Math.floor((63 - start) / width);
+    // Vertical columns 0 - 7
     const col = start % width;
 
     // Get the id for each diagonally adjacent square, store it in the array
     const diagonalSquares = [];
 
     // Check top-left
-    if (row > 1 && col > 0) {
-        diagonalSquares.push((width - (row - 1)) * width + col - 1);
+    if (row > 0 && col > 0) {
+        diagonalSquares.push((width - row) * width + col - 1);
     }
 
     // Check top-right
-    if (row > 1 && col < 7) {
-        diagonalSquares.push((width - (row - 1)) * width + col + 1);
+    if (row > 0 && col < 6) {
+        diagonalSquares.push((width - row) * width + col + 1);
     }
 
     return diagonalSquares;
@@ -21,7 +23,10 @@ function checkDiagonals(start) {
 
 
 // Check possible jump moves of 2 diagonal squares
-function getJumpMoves(start, regularMoves) {
+function getJumpMoves(opponentPiece, regularMoves) {
+    const start = Number(startPos);
+    const opponentId = opponentPiece.getAttribute("square-id") || null;
+
     let jumpMoves = [];
 
     // Account for squares at the egde of the board
@@ -43,7 +48,8 @@ function getJumpMoves(start, regularMoves) {
         jumpMoves.splice(1);
     }
 
-    return jumpMoves;
+    if (!rightCol.includes(opponentId) || !leftCol.includes(opponentId))
+        return jumpMoves;
 };
 
 
@@ -55,11 +61,15 @@ function validMove(target, mandatoryJump = false) {
 
     const squareIds = checkDiagonals(start);
 
+    // Adjust this to check where the opponentpiece is??
+    //  ....
+
+
+
     // Allow either a jump move or a regular move (1 diagonal square)
     // Return legal moves and whether a jump is allowed
-    if (mandatoryJump) {
-        const jumpMoves = getJumpMoves(start, squareIds);
-        console.log("Jump moves:", jumpMoves)
+    if (mandatoryJump.jumpMoves) {
+        const { jumpMoves } = mandatoryJump;
         return { move: jumpMoves.includes(targetPos), jumpAllowed: true };
     } else {
         console.log("Regular moves:", squareIds)
@@ -83,7 +93,7 @@ function checkMandatoryJump(opponentTurn) {
         // Calculate where player has to jump to in order to capture opponent
         // For each possible target, check if the square is vacant
         if (takenByOpponent) {
-            const targets = getJumpMoves(start, squareIds);
+            const targets = getJumpMoves(square, squareIds);
 
             let vacant = [];
             // If at least one square is vacant, a jump is allowed
