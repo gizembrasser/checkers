@@ -94,6 +94,7 @@ function dragDrop(e) {
     const jumpTargets = mandatoryJump.objectConcat();
     const { jumpMoves, capturedPiece } = jumpTargets ?? [];
     const { move, jumpAllowed } = validMove(e.target, jumpMoves);
+    console.log(jumpTargets)
 
     const endPos = Number(e.target.getAttribute("square-id"));
 
@@ -106,6 +107,7 @@ function dragDrop(e) {
         if (move && !jumpAllowed) {
             e.target.append(draggedElement);
             changePlayer();
+            checkForWin();
             return;
         }
 
@@ -119,26 +121,29 @@ function dragDrop(e) {
                 e.target.append(draggedElement);
                 capturedPiece[0].firstChild.remove();
                 changePlayer();
+                checkForWin();
                 return;
             } else if (twoJumpsAllowed && jumpMoves[1] === endPos) {
                 e.target.append(draggedElement);
                 capturedPiece[1].firstChild.remove();
                 changePlayer();
+                checkForWin();
                 return;
             }
 
             e.target.append(draggedElement);
             capturedPiece.firstChild.remove();
             changePlayer();
+            checkForWin();
             return;
         };
 
-        infoDisplay.textContent = "Mandatory jump";
+        infoDisplay.textContent = "You can't go there";
         setTimeout(() => infoDisplay.textContent = "", 1000);
         return;
     }
 
-    infoDisplay.textContent = "Invalid move";
+    infoDisplay.textContent = "invalid move";
     setTimeout(() => infoDisplay.textContent = "", 1000);
     return;
 };
@@ -176,12 +181,23 @@ function checkForWin() {
 
     const endRow = [56, 57, 58, 59, 60, 61, 62, 63];
 
-    if (whites.length === 0 || blacks.length === 0) {
-        console.log("game over");
+    // Get the remaining pieces that are not stuck in the end row
+    const remainingWhites = whites.filter(piece => !endRow.includes(Number(piece.parentElement.getAttribute("square-id"))));
+    const remainingBlacks = blacks.filter(piece => !endRow.includes(Number(piece.parentElement.getAttribute("square-id"))));
+
+    if (whites.length === 0 || remainingWhites.length === 0) {
+        infoDisplay.innerHTML = "Black player wins!";
+        squares.forEach(square => square.firstChild?.setAttribute("draggable", false));
+        setTimeout(() => window.location.reload(), 1000);
+    }
+
+    if (blacks.length === 0 || remainingBlacks.length === 0) {
+        infoDisplay.innerHTML = "White player wins!";
+        squares.forEach(square => square.firstChild?.setAttribute("draggable", false));
+        setTimeout(() => window.location.reload(), 1000);
     }
 };
 
-checkForWin()
 
 /* ------------------- Temporarily hidden multiplayer functionalities (unfinished) ------------------- */
 
