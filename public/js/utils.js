@@ -47,7 +47,6 @@ function getJumpMoves(opponentPiece) {
 // A jump move is disabled by default if there aren't any opponent piece(s) to capture
 function validMove(target, mandatoryJump = false) {
     const start = Number(startPos);
-
     const squareIds = checkDiagonals(start);
 
     // Allow either a jump move or a regular move (1 diagonal square)

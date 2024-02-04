@@ -135,11 +135,11 @@ function dragDrop(e) {
             setTimeout(() => infoDisplay.textContent = "", 1000);
             performJumpMove();
         } else {
-            infoDisplay.textContent = "You can't go there";
+            infoDisplay.textContent = "Invalid move";
             setTimeout(() => infoDisplay.textContent = "", 1000);
         }
     } else {
-        infoDisplay.textContent = "Invalid move";
+        infoDisplay.textContent = "You can't go there";
         setTimeout(() => infoDisplay.textContent = "", 1000);
     }
 };
