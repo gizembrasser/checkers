@@ -92,57 +92,59 @@ function dragDrop(e) {
     const mandatoryJump = checkMandatoryJump(opponentTurn);
 
     const endPos = Number(e.target.getAttribute("square-id"));
-    const jumpTargets = mandatoryJump.objectConcat();
-    const { jumpMoves, capturedPiece } = jumpTargets ?? {};
+    const { jumpMoves, capturedPiece } = (mandatoryJump.objectConcat() ?? {});
     const { move, jumpAllowed } = validMove(endPos, jumpMoves);
 
-    // Check if it's a valid turn, and if the piece was moved into an empty black square
-    if (!taken && validTurn) {
-        // Check if it's a regular move or jump move
-        if (move && !jumpAllowed) {
+    const performRegularMove = () => {
+        e.target.append(draggedElement);
+        changePlayer();
+        checkForWin();
+        return;
+    };
+
+    const performJumpMove = () => {
+        const twoJumpsAllowed = Array.isArray(capturedPiece);
+
+        // Check which capturedPiece to remove based on end position
+        if (twoJumpsAllowed && jumpMoves[0] === endPos) {
             e.target.append(draggedElement);
+            capturedPiece[0].firstChild.remove();
+            changePlayer();
+            checkForWin();
+            return;
+        } else if (twoJumpsAllowed && jumpMoves[1] === endPos) {
+            e.target.append(draggedElement);
+            capturedPiece[1].firstChild.remove();
             changePlayer();
             checkForWin();
             return;
         }
 
-        if (move && jumpAllowed && jumpMoves.includes(endPos)) {
+        // If there's only one jump allowed, remove the single capturedPiece
+        e.target.append(draggedElement);
+        capturedPiece.firstChild.remove();
+        changePlayer();
+        checkForWin();
+        return;
+    };
+
+    // Check if it's a valid turn, and if the piece was moved into an empty black square
+    if (!taken && validTurn) {
+        if (move && !jumpAllowed) {
+            performRegularMove();
+        } else if (move && jumpAllowed && jumpMoves.includes(endPos)) {
             infoDisplay.textContent = "Captured!";
             setTimeout(() => infoDisplay.textContent = "", 1000);
-            const twoJumpsAllowed = Array.isArray(capturedPiece);
-
-            // Check which opponent's piece to remove based on end position
-            if (twoJumpsAllowed && jumpMoves[0] === endPos) {
-                e.target.append(draggedElement);
-                capturedPiece[0].firstChild.remove();
-                changePlayer();
-                checkForWin();
-                return;
-            } else if (twoJumpsAllowed && jumpMoves[1] === endPos) {
-                e.target.append(draggedElement);
-                capturedPiece[1].firstChild.remove();
-                changePlayer();
-                checkForWin();
-                return;
-            }
-
-            e.target.append(draggedElement);
-            capturedPiece.firstChild.remove();
-            changePlayer();
-            checkForWin();
-            return;
-        };
-
-        infoDisplay.textContent = "You can't go there";
+            performJumpMove();
+        } else {
+            infoDisplay.textContent = "You can't go there";
+            setTimeout(() => infoDisplay.textContent = "", 1000);
+        }
+    } else {
+        infoDisplay.textContent = "Invalid move";
         setTimeout(() => infoDisplay.textContent = "", 1000);
-        return;
     }
-
-    infoDisplay.textContent = "Invalid move";
-    setTimeout(() => infoDisplay.textContent = "", 1000);
-    return;
 };
-
 
 
 /* ------------------------- Change whose turn it is after each move ----------------------------- */

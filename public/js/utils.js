@@ -56,7 +56,7 @@ function validMove(target, mandatoryJump = false) {
         console.log("Jump moves:", mandatoryJump);
         return { move: mandatoryJump.includes(target), jumpAllowed: true };
     } else {
-        console.log("Regular moves:", squareIds)
+        console.log("Regular moves:", squareIds);
         return { move: squareIds.includes(target), jumpAllowed: false };
     }
 };
@@ -66,34 +66,27 @@ function validMove(target, mandatoryJump = false) {
 // If yes it is mandatory to make a jump move, return vacant target square and opponent's piece
 function checkMandatoryJump(opponent) {
     const start = Number(startPos);
-
     const squareIds = checkDiagonals(start);
 
     // Check if surrounding diagonals are taken by opponent(s)
-    const mandatoryJump = squareIds.map(id => {
-        const square = document.querySelector(`[square-id="${id}"]`);
-        const takenByOpponent = square.firstChild?.firstChild.classList.contains(opponent);
-
-        // Calculate where player has to jump to in order to capture opponent
-        // For each possible target, check if the square is vacant
-        if (takenByOpponent) {
+    // Calculate where player has to jump to in order to capture opponent
+    // For each possible target, check if the square is vacant
+    const mandatoryJump = squareIds
+        .map(id => document.querySelector(`[square-id="${id}"]`))
+        .filter(square => square.firstChild?.firstChild.classList.contains(opponent))
+        .map(square => {
             const targets = getJumpMoves(square);
+            const vacant = targets.filter(id => !document.querySelector(`[square-id="${id}"]`).firstChild);
 
-            let vacant = [];
             // If the square beyond is vacant, a jump move is allowed
-            targets.forEach(id => {
-                const target = document.querySelector(`[square-id="${id}"]`);
-                if (target.firstChild === null) {
-                    vacant.push(id);
-                }
-            });
-            // Assign false if there's no vacant squares
-            vacant = vacant.length === 0 ? false : vacant;
-            return { jumpMoves: vacant, capturedPiece: square };
-        }
-    });
+            return {
+                jumpMoves: vacant.length > 0 ? vacant : false,
+                capturedPiece: square
+            };
+        });
+
     return mandatoryJump;
-};
+}
 
 
 // If an array has multiple objects with the same keys, concatenate their values together into one object
