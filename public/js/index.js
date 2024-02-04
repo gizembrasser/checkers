@@ -35,8 +35,8 @@ function createBoard() {
         square.setAttribute("square-id", i);
 
         // Create checker scheme for all 8 rows
-        // For even rows, alternate beige and grey checkers
-        // For uneven rows, alternative grey and beige checkers
+        // For even rows, alternate beige and grey squares
+        // For uneven rows, alternate grey and beige squares
         const row = Math.floor((63 - i) / width) + 1
         if (row % 2 === 0) {
             square.classList.add(i % 2 === 0 ? "beige" : "grey");
@@ -54,7 +54,7 @@ function createBoard() {
         }
 
         board.append(square);
-    })
+    });
 };
 
 createBoard()
@@ -69,7 +69,7 @@ squares.forEach(square => {
     square.addEventListener("drop", dragDrop);
 });
 
-// Record the start position after element has been moved
+// Record start position after element has been moved
 let startPos;
 let draggedElement;
 
@@ -91,15 +91,10 @@ function dragDrop(e) {
     const taken = e.target.classList.contains("piece");
     const mandatoryJump = checkMandatoryJump(opponentTurn);
 
+    const endPos = Number(e.target.getAttribute("square-id"));
     const jumpTargets = mandatoryJump.objectConcat();
     const { jumpMoves, capturedPiece } = jumpTargets ?? {};
-    const { move, jumpAllowed } = validMove(e.target, jumpTargets);
-    console.log(jumpTargets)
-
-    const endPos = Number(e.target.getAttribute("square-id"));
-
-    console.log("Start Position:", startPos);
-    console.log("End Position:", endPos);
+    const { move, jumpAllowed } = validMove(endPos, jumpMoves);
 
     // Check if it's a valid turn, and if the piece was moved into an empty black square
     if (!taken && validTurn) {
@@ -143,7 +138,7 @@ function dragDrop(e) {
         return;
     }
 
-    infoDisplay.textContent = "invalid move";
+    infoDisplay.textContent = "Invalid move";
     setTimeout(() => infoDisplay.textContent = "", 1000);
     return;
 };
