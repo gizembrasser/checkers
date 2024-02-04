@@ -53,10 +53,8 @@ function validMove(target, mandatoryJump = false) {
     // Allow either a jump move or a regular move (1 diagonal square)
     // Return legal moves and whether a jump is allowed
     if (mandatoryJump) {
-        console.log("Jump moves:", mandatoryJump);
         return { move: mandatoryJump.includes(target), jumpAllowed: true };
     } else {
-        console.log("Regular moves:", squareIds);
         return { move: squareIds.includes(target), jumpAllowed: false };
     }
 };

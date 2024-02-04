@@ -106,19 +106,17 @@ function dragDrop(e) {
         const twoJumpsAllowed = Array.isArray(capturedPiece);
 
         // Check which capturedPiece to remove based on end position
-        if (twoJumpsAllowed && jumpMoves[0] === endPos) {
-            e.target.append(draggedElement);
-            capturedPiece[0].firstChild.remove();
-            changePlayer();
-            checkForWin();
-            return;
-        } else if (twoJumpsAllowed && jumpMoves[1] === endPos) {
-            e.target.append(draggedElement);
-            capturedPiece[1].firstChild.remove();
-            changePlayer();
-            checkForWin();
-            return;
-        }
+        if (twoJumpsAllowed) {
+            for (let i = 0; i < 2; i++) {
+                if (jumpMoves[i] === endPos) {
+                    e.target.append(draggedElement);
+                    capturedPiece[i].firstChild.remove();
+                    changePlayer();
+                    checkForWin();
+                    return;
+                }
+            }
+        };
 
         // If there's only one jump allowed, remove the single capturedPiece
         e.target.append(draggedElement);
