@@ -5,6 +5,8 @@ socket.emit("joined");
 
 /* ----------------------------------- Globals ------------------------------------------ */
 const board = document.querySelector("#board");
+const whiteCaptured = document.querySelector("#white-captured");
+const blackCaptured = document.querySelector("#black-captured");
 const playerDisplay = document.querySelector("#player");
 const infoDisplay = document.querySelector("#turn-info");
 const width = 8;
@@ -94,7 +96,6 @@ function dragDrop(e) {
     const endPos = Number(e.target.getAttribute("square-id"));
     const { jumpMoves, capturedPiece } = (mandatoryJump.objectConcat() ?? {});
     const { move, jumpAllowed } = validMove(endPos, jumpMoves);
-    console.log(capturedPiece)
 
     const performRegularMove = () => {
         e.target.append(draggedElement);
@@ -111,7 +112,7 @@ function dragDrop(e) {
             for (let i = 0; i < jumpMoves.length; i++) {
                 if (jumpMoves[i] === endPos) {
                     e.target.append(draggedElement);
-                    capturedPiece[i].firstChild.remove();
+                    removeCapturedPiece(capturedPiece[i]);
                     changePlayer();
                     checkForWin();
                     return;
@@ -121,7 +122,7 @@ function dragDrop(e) {
 
         // If there's only one jump allowed, remove the single capturedPiece
         e.target.append(draggedElement);
-        capturedPiece.firstChild.remove();
+        removeCapturedPiece(capturedPiece);
         changePlayer();
         checkForWin();
         return;
@@ -142,6 +143,23 @@ function dragDrop(e) {
     } else {
         infoDisplay.textContent = "You can't go there";
         setTimeout(() => infoDisplay.textContent = "", 1000);
+    }
+};
+
+
+/* -------------------------- Move captured pieces to captured area ----------------------------- */
+function removeCapturedPiece(piece) {
+    const capturedPiece = piece.firstChild;
+
+    switch (capturedPiece.id) {
+        case "white-piece":
+            capturedPiece.remove();
+            whiteCaptured.appendChild(capturedPiece);
+            break;
+        case "black-piece":
+            capturedPiece.remove();
+            blackCaptured.appendChild(capturedPiece);
+            break;
     }
 };
 
