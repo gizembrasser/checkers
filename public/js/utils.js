@@ -1,4 +1,4 @@
-// Function that returns all diagonally adjacent squares in front of a certain starting square
+// Function that returns all diagonally adjacent squares for a certain starting square
 function checkDiagonals(start) {
     const row = Math.floor((63 - start) / width) + 1;
     const col = start % width;
@@ -16,6 +16,16 @@ function checkDiagonals(start) {
         diagonalSquares.push((width - (row - 1)) * width + col + 1);
     }
 
+    // Check bottom-left
+    if (row < 8 && col > 0) {
+        diagonalSquares.push((width - (row + 1)) * width + col - 1);
+    }
+
+    // Check bottom-right
+    if (row < 8 && col < 7) {
+        diagonalSquares.push((width - (row + 1)) * width + col + 1);
+    }
+
     return diagonalSquares;
 };
 
@@ -26,7 +36,7 @@ function getJumpMoves(opponentPiece) {
     const opponentId = Number(opponentPiece.getAttribute("square-id")) || null;
     const edges = [8, 24, 40, 56, 58, 60, 62, 1, 3, 5, 7, 23, 39, 55];
 
-    let jumpMoves = [];
+    const jumpMoves = [];
 
     // Calculate jump target based on start and opponent position
     switch (opponentId) {
@@ -35,6 +45,12 @@ function getJumpMoves(opponentPiece) {
             break;
         case start + width + 1:
             jumpMoves.push(opponentId + width + 1);
+            break;
+        case start - width - 1:
+            jumpMoves.push(opponentId - width - 1);
+            break;
+        case start - width + 1:
+            jumpMoves.push(opponentId - width + 1);
             break;
     };
 
@@ -52,9 +68,12 @@ function validMove(target, mandatoryJump = false) {
     // Allow either a jump move or a regular move (1 diagonal square)
     // Return legal moves and whether a jump is allowed
     if (mandatoryJump) {
+        console.log("Jump moves:", mandatoryJump)
         return { move: mandatoryJump.includes(target), jumpAllowed: true };
     } else {
-        return { move: squareIds.includes(target), jumpAllowed: false };
+        const forwardMoves = squareIds.filter(square => square >= start);
+        console.log("Regular moves:", forwardMoves)
+        return { move: forwardMoves.includes(target), jumpAllowed: false };
     }
 };
 

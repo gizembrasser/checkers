@@ -94,6 +94,7 @@ function dragDrop(e) {
     const endPos = Number(e.target.getAttribute("square-id"));
     const { jumpMoves, capturedPiece } = (mandatoryJump.objectConcat() ?? {});
     const { move, jumpAllowed } = validMove(endPos, jumpMoves);
+    console.log(capturedPiece)
 
     const performRegularMove = () => {
         e.target.append(draggedElement);
@@ -107,7 +108,7 @@ function dragDrop(e) {
 
         // Check which capturedPiece to remove based on end position
         if (twoJumpsAllowed) {
-            for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < jumpMoves.length; i++) {
                 if (jumpMoves[i] === endPos) {
                     e.target.append(draggedElement);
                     capturedPiece[i].firstChild.remove();
