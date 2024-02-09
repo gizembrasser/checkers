@@ -32,29 +32,20 @@ function createBoard() {
         const square = document.createElement("div");
 
         square.classList.add("square");
-        square.innerHTML = piece
+        square.innerHTML = piece;
         square.firstChild?.setAttribute("draggable", true);
+        square.firstChild?.setAttribute("king", false);
         square.setAttribute("square-id", i);
 
         // Create checker scheme for all 8 rows
         // For even rows, alternate beige and grey squares
         // For uneven rows, alternate grey and beige squares
-        const row = Math.floor((63 - i) / width) + 1
+        const row = Math.floor((63 - i) / width) + 1;
         if (row % 2 === 0) {
             square.classList.add(i % 2 === 0 ? "beige" : "grey");
         } else {
             square.classList.add(i % 2 === 0 ? "grey" : "beige");
         }
-
-        // Color in the pieces
-        if (piece === blackPiece) {
-            square.firstChild.firstChild.classList.add("black");
-        }
-
-        if (piece === whitePiece) {
-            square.firstChild.firstChild.classList.add("white");
-        }
-
         board.append(square);
     });
 };
@@ -88,7 +79,7 @@ function dragDrop(e) {
     e.stopPropagation();
 
     // Define game rules
-    const validTurn = draggedElement.firstChild.classList.contains(playerTurn);
+    const validTurn = draggedElement.id.includes(playerTurn);
     const opponentTurn = playerTurn === "white" ? "black" : "white";
     const taken = e.target.classList.contains("piece");
     const mandatoryJump = checkMandatoryJump(opponentTurn);
@@ -96,9 +87,11 @@ function dragDrop(e) {
     const endPos = Number(e.target.getAttribute("square-id"));
     const { jumpMoves, capturedPiece } = (mandatoryJump.objectConcat() ?? {});
     const { move, jumpAllowed } = validMove(endPos, jumpMoves);
+    console.log(mandatoryJump)
 
     const performRegularMove = () => {
         e.target.append(draggedElement);
+        crownPiece(draggedElement)
         changePlayer();
         checkForWin();
         return;
@@ -152,11 +145,11 @@ function removeCapturedPiece(piece) {
     const capturedPiece = piece.firstChild;
 
     switch (capturedPiece.id) {
-        case "white-piece":
+        case "white":
             capturedPiece.remove();
             whiteCaptured.appendChild(capturedPiece);
             break;
-        case "black-piece":
+        case "black":
             capturedPiece.remove();
             blackCaptured.appendChild(capturedPiece);
             break;
@@ -190,10 +183,10 @@ function revertIds() {
 
 /* ------------------------------------ Check for win ----------------------------------------------- */
 function checkForWin() {
-    const whites = Array.from(document.querySelectorAll("#white-piece"));
-    const blacks = Array.from(document.querySelectorAll("#black-piece"));
+    const whites = Array.from(document.querySelectorAll("#white"));
+    const blacks = Array.from(document.querySelectorAll("#black"));
 
-    const endRow = [56, 57, 58, 59, 60, 61, 62, 63];
+    const endRow = [56, 58, 60, 62];
 
     // Get the remaining pieces that are not stuck in the end row
     const remainingWhites = whites.filter(piece => !endRow.includes(Number(piece.parentElement.getAttribute("square-id"))));
