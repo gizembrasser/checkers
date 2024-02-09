@@ -80,11 +80,11 @@ path {
     background-color: rgb(91, 83, 60);
 }
 
-.black {
+#black {
     fill: black
 }
 
-.white {
+#white {
     fill: rgb(227, 220, 189);
 }
 

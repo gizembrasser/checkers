@@ -89,7 +89,7 @@ function checkMandatoryJump(opponent) {
     // For each possible target, check if the square is vacant
     const mandatoryJump = squareIds
         .map(id => document.querySelector(`[square-id="${id}"]`))
-        .filter(square => square.firstChild?.firstChild.classList.contains(opponent))
+        .filter(square => square.firstChild?.id.includes(opponent))
         .map(square => {
             const targets = getJumpMoves(square);
             const vacant = targets.filter(id => !document.querySelector(`[square-id="${id}"]`).firstChild);
@@ -102,7 +102,19 @@ function checkMandatoryJump(opponent) {
         });
 
     return mandatoryJump;
-}
+};
+
+
+// Check if a piece has made it to the other end of the board
+// If yes, crown the piece. King checkers can also move backwards
+function crownPiece(piece) {
+    const pieceId = Number(piece.parentNode.getAttribute("square-id"));
+    const endRow = [56, 58, 60, 62];
+
+    if (endRow.includes(pieceId)) {
+        piece.setAttribute()
+    }
+};
 
 
 // If an array has multiple objects with the same keys, concatenate their values together into one object
